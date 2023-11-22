@@ -1,13 +1,5 @@
 #include "lab.h"
 
-/*#define Baralho 81
-#define Cartas_lebre 18
-#define Cartas_Tartarugas 17
-#define Cartas_Raposas 15
-#define Cartas_cordeiros 15
-#define Cartas_lobos 16
-#define Cartas_lobosspeacial 3*/
-
 
 void ecraInicial(){
 	
@@ -25,6 +17,7 @@ void ecraInicial(){
 typedef struct BARALHO{
 	char cartas[81];
 	int size;
+	char descarte[81];
 
 }baralho;
 
@@ -32,70 +25,14 @@ typedef struct Jogador {
 
 	char nome[50];
 	int type;
-	baralho mao;
+	baralho mao[7];
 
 }jogador;
 
-/*void inicializarBaralho() {
-
-	int deck[Baralho];
-	int i, j, temp;
-
-	// Inicializar o baralho
-	for (i = 0; i < Cartas_lebre; i++) {
-		deck[i] = 0; // Lebre
-	}
-	for (i = Cartas_lebre; i < Cartas_lebre + Cartas_Tartarugas; i++) {
-		deck[i] = 1; // Tartaruga
-	}
-	for (i = Cartas_lebre + Cartas_Tartarugas; i < Cartas_lebre + Cartas_Tartarugas + Cartas_Raposas; i++) {
-		deck[i] = 2; // Raposa
-	}
-	for (i = Cartas_lebre + Cartas_Tartarugas + Cartas_Raposas; i < Cartas_lebre + Cartas_Tartarugas + Cartas_Raposas + Cartas_cordeiros; i++) {
-		deck[i] = 3; // Cordeiro
-	}
-	for (i = Cartas_lebre + Cartas_Tartarugas + Cartas_Raposas + Cartas_cordeiros; i < Baralho - Cartas_lobosspeacial; i++) {
-		deck[i] = 4; // Lobo
-	}
-
-	// Adiciona as cartas especiais
-	for (i = Baralho - Cartas_lobosspeacial; i < Baralho; i++) {
-		deck[i] = 5; // Carta especial
-	}
-
-	srand(time(NULL));
-	for (i = Baralho - 1; i > 0; i--) {
-		j = rand() % (i + 1);
-		temp = deck[i];
-		deck[i] = deck[j];
-		deck[j] = temp;
-	}
-	for (i = 0; i < Baralho; i++) {
-		switch (deck[i]) {
-		case 0:
-			printf("Lebre\n");
-			break;
-		case 1:
-			printf("Tartaruga\n");
-			break;
-		case 2:
-			printf("Raposa\n");
-			break;
-		case 3:
-			printf("Cordeiro\n");
-			break;
-		case 4:
-			printf("Lobo\n");
-			break;
-		case 5:
-			printf("Carta especial\n");
-			break;
-		}
-	}
-}*/
 
 
-void comecar(baralho* myB) {
+
+void comecarbaralho(baralho* myB) {
 
 	//L,T,W,w,R,C
 
@@ -168,9 +105,36 @@ void scrambledeck(baralho* myB) {
 	
 }
 
+void nomep1(jogador* P1) {
+
+	printf("Introduza o nome do Player 1: ");
+	(void)scanf("%s",P1->nome);
+
+}
+
+void p1mao(jogador *P1,baralho *myB) {
 
 
-saveBaralho(FILE* fp,baralho* myB ) {
+	int i = 0;
+	for (i = 0; i < 7; i++) {
+
+		P1->mao[i] = myB->cartas[i];
+		
+	}
+
+
+}
+
+void jogada(jogador* P1, baralho* myB) {
+
+
+
+
+
+}
+
+
+void saveBaralho(FILE* fp,baralho* myB,jogador* P1 ) {
 
 	int i = 0;
 	fprintf(fp, "(");
@@ -179,6 +143,11 @@ saveBaralho(FILE* fp,baralho* myB ) {
 
 	}
 	fprintf(fp, ")");
+	fprintf(fp, "\n%s", P1->nome);
+	for (i = 0; i < 7; i++) {
+
+		fprintf(fp, "%s,", P1->mao);
+	}
 }
 
 void readBaralho(FILE* fp, baralho* myB) {
@@ -195,19 +164,21 @@ void readBaralho(FILE* fp, baralho* myB) {
 void novoJogo(){
 
 	baralho myB;
-	comecar(&myB);
+	jogador P1;
+	comecarbaralho(&myB);
 	scrambledeck(&myB);
+	nomep1(&P1);
+	p1mao(&P1, &myB);
 	printbaralho(myB);
 
 	FILE* fp = NULL;
 	fopen_s(&fp, "maindeck.txt","w");
 	if (fp) {
-		saveBaralho(fp,&myB);
+		saveBaralho(fp,&myB,&P1);
 		fclose(fp);
 	}
 	printbaralho(myB);
 
-	//inicializarBaralho();
 
 	}
 
