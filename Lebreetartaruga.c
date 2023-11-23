@@ -26,10 +26,10 @@ typedef struct Jogador {
 	char nome[50];
 	int type;
 	baralho mao[7];
+	char apostaI;
+	int pontos;
 
 }jogador;
-
-
 
 
 void comecarbaralho(baralho* myB) {
@@ -117,10 +117,12 @@ void p1mao(jogador *P1,baralho *myB) {
 	int i = 0;
 	for (i = 0; i < 7; i++) {
 
-		P1->mao[i] = myB->cartas[i];
+		P1->mao->cartas[i] = myB->cartas[i];
+		P1->mao->size++;
+		myB->cartas[i] = 'x';
+		myB->size--;
 		
 	}
-
 
 }
 
@@ -132,21 +134,31 @@ void jogada(jogador* P1, baralho* myB) {
 
 }
 
-
-void saveBaralho(FILE* fp,baralho* myB,jogador* P1 ) {
+void saveBaralho(FILE* fp,baralho* myB,jogador* P1 ){
 
 	int i = 0;
 	fprintf(fp, "(");
 	for (i = 0; i < 81; i++) {
 		fprintf(fp, "%c,", myB->cartas[i]);
+							}
+	fprintf(fp,")");
+	fclose(fp);
+}
 
+void savedeckplusp1(FILE* fp, baralho* myB, jogador* P1) {
+
+	int i = 0;
+	fprintf(fp, "(");
+	for (i = 0; i < 81; i++) {
+		fprintf(fp, "%c,", myB->cartas[i]);
 	}
-	fprintf(fp, ")");
-	fprintf(fp, "\n%s", P1->nome);
+	fprintf(fp,")");
+	fprintf(fp, "\n%s -> ", P1->nome);
 	for (i = 0; i < 7; i++) {
+		fprintf(fp, "%c,", P1->mao->cartas[i]);
 
-		fprintf(fp, "%s,", P1->mao);
 	}
+	fclose(fp);
 }
 
 void readBaralho(FILE* fp, baralho* myB) {
@@ -167,17 +179,24 @@ void novoJogo(){
 	comecarbaralho(&myB);
 	scrambledeck(&myB);
 	nomep1(&P1);
-	p1mao(&P1, &myB);
-	printbaralho(myB);
-
 	FILE* fp = NULL;
-	fopen_s(&fp, "maindeck.txt","w");
+	fopen_s(&fp, "maindeck.txt", "w");
 	if (fp) {
-		saveBaralho(fp,&myB,&P1);
+		saveBaralho(fp, &myB, &P1);
 		fclose(fp);
 	}
 	printbaralho(myB);
+	system("pause");
+	p1mao(&P1,&myB);
 
+	fopen_s(&fp, "maindeck.txt","w");
+	if (fp) {
+		savedeckplusp1(fp, &myB, &P1);
+
+		fclose(fp);
+	}
+	printbaralho(myB);
+	printf("P1:%s cartas na mão: %s", P1.nome, P1.mao->cartas);
 
 	}
 
