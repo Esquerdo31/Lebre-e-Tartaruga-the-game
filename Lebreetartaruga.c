@@ -114,7 +114,6 @@ void nomep1(jogador* P1) {
 
 void p1mao(jogador *P1,baralho *myB) {
 
-
 	int i = 0;
 	for (i = 0; i < 7; i++) {
 
