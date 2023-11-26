@@ -26,8 +26,8 @@ typedef struct Jogador {
 	char nome[50];
 	int type;
 	baralho mao[7];
-	char apostaI;
-	int pontos;
+	char apostaI;//O que cada jogador vai apostar
+	int pontos;// Para a pontuação final
 
 }jogador;
 
@@ -100,9 +100,6 @@ void scrambledeck(baralho* myB) {
 		trocaChars(&(myB->cartas[i]), &(myB->cartas[rand() % myB->size]));
 	}
 
-
-
-	
 }
 
 void nomep1(jogador* P1) {
@@ -112,20 +109,20 @@ void nomep1(jogador* P1) {
 
 }
 
-void p1mao(jogador *P1,baralho *myB) {
+void p1mao(jogador* P1, baralho* myB) {
+	int i;
 
-	int i = 0;
 	for (i = 0; i < 7; i++) {
-
-		P1->mao->cartas[i] = myB->cartas[i];
+		printf("i=%d", i);
+		P1->mao->cartas[i] = myB->cartas[i]+ '\0';
 		P1->mao->size++;
 		myB->cartas[i] = 'x';
 		myB->size--;
-		
+		printf(" %c,", P1->mao->cartas[i]);
+		system("pause");
 	}
-
+	
 }
-
 void jogada(jogador* P1, baralho* myB) {
 
 
@@ -145,20 +142,21 @@ void saveBaralho(FILE* fp,baralho* myB,jogador* P1 ){
 	fclose(fp);
 }
 
-void savedeckplusp1(FILE* fp, baralho* myB, jogador* P1) {
+void savedeckplusp1(FILE* fp, baralho* myB, jogador* P1) { //Função serve para verificar se está a guardar tudo bem no ficheiro txt
 
 	int i = 0;
 	fprintf(fp, "(");
 	for (i = 0; i < 81; i++) {
-		fprintf(fp, "%c,", myB->cartas[i]);
+		fprintf(fp, "%c,", myB->cartas[i]); //Imprimir tudo igual há função anterior e normal saveBaralho
 	}
 	fprintf(fp,")");
 	fprintf(fp, "\n%s -> ", P1->nome);
 	for (i = 0; i < 7; i++) {
-		fprintf(fp, "%c,", P1->mao->cartas[i]);
+		fprintf(fp, " %c, ", P1->mao->cartas[i]);
 
 	}
 	fclose(fp);
+	printf(" \n");
 }
 
 void readBaralho(FILE* fp, baralho* myB) {
@@ -172,6 +170,91 @@ void readBaralho(FILE* fp, baralho* myB) {
 	fgetc(fp); //descarta ','
 }
 
+void apostaInicial(jogador* P1, baralho *myB) {
+
+	printf("\nTens estas cartas na tua mão:");
+	for (int i = 0; i < P1->mao->cartas; i++) {
+
+		printf("%c,",P1->mao->cartas[i]);
+	}
+
+
+	printf("Escolhe agora a tua carta da aposta inicial: ");
+	(void)scanf("%c",&P1->apostaI);
+	if (P1->apostaI == 'L') {
+
+		for (int i = 0; i < P1->mao->cartas; i++) {
+
+			if (P1->apostaI == 'L') {
+
+				P1->apostaI = P1->mao->cartas[i];
+				P1->mao->cartas[i] = 'x';
+				break;
+
+			}
+			else
+				{
+				if (P1->apostaI == 'W') {
+
+					P1->apostaI = P1->mao->cartas[i];
+					P1->mao->cartas[i] = 'x';
+
+					break;
+
+				}
+				else {
+					if (P1->apostaI == 'w') {
+
+						P1->apostaI = P1->mao->cartas[i];
+						P1->mao->cartas[i] = 'x';
+
+						break;
+					}
+
+					else {
+						if (P1->apostaI == 'T') {
+
+							P1->apostaI = P1->mao->cartas[i];
+							P1->mao->cartas[i] = 'x';
+
+							break;
+						}
+						else {
+							if (P1->apostaI == 'R') {
+
+								P1->apostaI = P1->mao->cartas[i];
+								P1->mao->cartas[i] = 'x';
+
+								break;
+
+							}
+
+							else {
+								if (P1->apostaI == 'C') {
+
+									P1->apostaI = P1->mao->cartas[i];
+									P1->mao->cartas[i] = 'x';
+
+									break;
+
+								}
+
+							}
+
+
+
+
+
+
+						}
+					}
+
+				}
+				
+			}
+		}
+	}
+}
 void novoJogo(){
 
 	baralho myB;
@@ -197,6 +280,7 @@ void novoJogo(){
 	}
 	printbaralho(myB);
 	printf("P1:%s cartas na mão: %s", P1.nome, P1.mao->cartas);
+	//apostaInicial(&P1,&myB);
 
 	}
 
