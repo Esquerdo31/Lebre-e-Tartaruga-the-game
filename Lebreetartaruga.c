@@ -1,5 +1,6 @@
 #include "lab.h"
-
+#include <stdbool.h>
+#include <windows.h>
 
 void ecraInicial(){
 	
@@ -18,6 +19,7 @@ typedef struct BARALHO{
 	char cartas[81];
 	int size;
 	char descarte[81];
+	char apostasIniciais[6];
 
 }baralho;
 
@@ -27,7 +29,9 @@ typedef struct Jogador {
 	int type;
 	baralho mao;
 	char apostaI;//O que cada jogador vai apostar
+	char apostafixa;
 	int pontos;// Para a pontuação final
+	
 
 }jogador;
 
@@ -43,39 +47,58 @@ void comecarbaralho(baralho* myB) {
 
 		myB->cartas[i] = 'L';
 		myB->size++;
+		if (i == 17) {
+			myB->apostasIniciais[0] = 'L';
+		}
 	}
-	
+
 	for (i = 18; i < 35; i++) {
 
 		myB->cartas[i] = 'T';
 		myB->size++;
+		if (i == 34) {
+			myB->apostasIniciais[1] = 'T';
+		}
 	}
 
-	
+
 	for (i = 35; i < 48; i++) {
 
 		myB->cartas[i] = 'W';
 		myB->size++;
+		if (i == 37) {
+			myB->apostasIniciais[2] = 'W';
+		}
 	}
-	
+
 	for (i = 48; i < 51; i++) {
 
 		myB->cartas[i] = 'w';
 		myB->size++;
+		if (i == 50) {
+			myB->apostasIniciais[3] = 'w';
+		}
 	}
-	
-	for (i = 51; i <66 ; i++) {
+
+	for (i = 51; i < 66; i++) {
 
 		myB->cartas[i] = 'R';
 		myB->size++;
+		if (i == 65) {
+			myB->apostasIniciais[4] = 'R';
+		}
 	}
 
 	for (i = 66; i < 81; i++) {
 
 		myB->cartas[i] = 'C';
 		myB->size++;
+		if (i == 80) {
+			myB->apostasIniciais[5] = 'C';
+		}
 	}
 
+	
 }
 
 void printbaralho(baralho myB) {
@@ -92,7 +115,7 @@ void printbaralho(baralho myB) {
 
 	}
 
-
+	printf("\n");
 }
 
 void scrambledeck(baralho* myB) {
@@ -102,13 +125,27 @@ void scrambledeck(baralho* myB) {
 
 		if (myB->size == 0) { return; }
 		trocaChars(&(myB->cartas[i]), &(myB->cartas[rand() % myB->size]));
+
 	}
 
 }
 
-void nomep1(jogador* P1) {
+void embaralharapostainicial(baralho* myB, int tamanho,jogador* P1) {
+	for (int i = tamanho - 1; i > 0; i--) {
+		int j = rand() % (i + 1);
 
-	printf("Introduza o nome do Player One: ");
+		// Troca as cartas i e j
+		char temp = myB->apostasIniciais[i];
+		myB->apostasIniciais[i] = myB->apostasIniciais[j];
+		myB->apostasIniciais[j] = temp;
+	}
+	P1->apostafixa = myB->apostasIniciais[0];
+}
+
+void nomep1(jogador* P1) {
+	gotoxy(40, 14);
+	printf("Introduza o nome do Player One: \n");
+	gotoxy(40, 16);
 	(void)scanf("%s",P1->nome);
 
 }
@@ -129,6 +166,39 @@ void p1mao(jogador* P1, baralho* myB) {
 	}
 	
 }
+
+void removerElemento(char vetor[], int tamanho, char elemento) {
+	int i, j;
+
+	// Procura o elemento no vetor
+	for (i = 0; i < tamanho; i++) {
+		if (vetor[i] == elemento) {
+			// Move os elementos à direita do elemento a ser removido uma posição para a esquerda
+			for (j = i; j < tamanho - 1; j++) {
+				vetor[j] = vetor[j + 1];
+			}
+
+			// Reduz o tamanho do vetor
+			tamanho--;
+
+			// Decrementa o índice para evitar pular um elemento
+			i--;
+		}
+	}
+}
+
+void jogadaInicial() {
+
+
+
+
+
+
+
+
+
+}
+
 void jogada(jogador* P1, baralho* myB) {
 
 
@@ -184,199 +254,269 @@ void readBaralho(FILE* fp, baralho* myB) {
 	fgetc(fp); //descarta ','
 }
 
+// Função para verificar se uma carta está na mão
+bool cartaNaMao(char mao[], int tamanhoDaMao, char cartaProcurada) {
+	for (int i = 0; i < tamanhoDaMao; i++) {
+		if (mao[i] == cartaProcurada) {
+			return true; // Carta encontrada na mão
+		}
+	}
+	return false; // Carta não encontrada na mão
+}
+
 void apostaInicial(jogador* P1, baralho* myB) {
 
+	int verdadeiro = 0;
 	printf("\nTens estas cartas na tua mão:");
 	for (int i = 0; i < 7; i++) {
 		if (i == 6) {
 			printf("%c", P1->mao.cartas[i]);
 		}
 		else
-		printf("%c,", P1->mao.cartas[i]);
+			printf("%c,", P1->mao.cartas[i]);
 	}
 
-
 	do {
+		// Solicita uma carta para fazer de aposta Inicial
 		printf("\nEscolhe agora a tua carta da aposta inicial: ");
 		(void)scanf(" %c", &P1->apostaI);
-		
-		switch (P1->apostaI) {
-
-		case 'L':{
-					int j = 0;
-					for(j=0;j<7;j++){
-			
-									if (P1->apostaI == P1->mao.cartas[j]) {
-
-										P1->mao.cartas[j] = 'x';
-										break;
-									}
-					}
-		
-					break;
-				}
-			
-		case 'l': {
-			int j = 0;
+		if (P1->apostaI == 'l') {
 			P1->apostaI = 'L';
-			for (j = 0; j < 7; j++) {
-
-				if (P1->apostaI == P1->mao.cartas[j]) {
-
-					P1->mao.cartas[j] = 'x';
-					break;
+		}
+		else {
+			if (P1->apostaI == 'r') {
+				P1->apostaI = 'R';
+			}
+			else {
+				if (P1->apostaI == 'c') {
+					P1->apostaI = 'C';
+				}
+				else
+				{
+					if (P1->apostaI == 't') {
+						P1->apostaI = 'T';
+					}
 				}
 			}
-
-			break;
 		}
-		case 'W': {
-			int j = 0;
-			for (j = 0; j < 7; j++) {
 
-				if (P1->apostaI == P1->mao.cartas[j]) {
+		if (cartaNaMao(P1->mao.cartas,7, P1->apostaI))
+		{
+			printf("Carta encontrada na mao!\n");
+			verdadeiro = 1;
+			switch (P1->apostaI) {
 
-					P1->mao.cartas[j] = 'x';
-					break;
+			case 'L': {
+				int j = 0;
+				for (j = 0; j < 7; j++) {
+
+					if (P1->apostaI == P1->mao.cartas[j]) {
+
+						P1->mao.cartas[j] = 'x';
+						break;
+					}
 				}
+
+				break;
 			}
 
-			break;
-		}
-		case 'w': {
-			int j = 0;
-			for (j = 0; j < 7; j++) {
+			case 'l': {
+				int j = 0;
+				P1->apostaI = 'L';
+				for (j = 0; j < 7; j++) {
 
-				if (P1->apostaI == P1->mao.cartas[j]) {
+					if (P1->apostaI == P1->mao.cartas[j]) {
 
-					P1->mao.cartas[j] = 'x';
-					break;
+						P1->mao.cartas[j] = 'x';
+						break;
+					}
 				}
+
+				break;
+			}
+			case 'W': {
+				int j = 0;
+				for (j = 0; j < 7; j++) {
+
+					if (P1->apostaI == P1->mao.cartas[j]) {
+
+						P1->mao.cartas[j] = 'x';
+						break;
+					}
+				}
+
+				break;
+			}
+			case 'w': {
+				int j = 0;
+				for (j = 0; j < 7; j++) {
+
+					if (P1->apostaI == P1->mao.cartas[j]) {
+
+						P1->mao.cartas[j] = 'x';
+						break;
+					}
+				}
+
+				break;
+			}
+			case 'R': {
+				int j = 0;
+				for (j = 0; j < 7; j++) {
+
+					if (P1->apostaI == P1->mao.cartas[j]) {
+
+						P1->mao.cartas[j] = 'x';
+						break;
+					}
+				}
+
+				break;
+			}
+			case 'r': {
+				int j = 0;
+				P1->apostaI = 'R';
+				for (j = 0; j < 7; j++) {
+
+					if (P1->apostaI == P1->mao.cartas[j]) {
+
+						P1->mao.cartas[j] = 'x';
+						break;
+					}
+				}
+
+				break;
+			}
+			case 'C': {
+				int j = 0;
+				for (j = 0; j < 7; j++) {
+
+					if (P1->apostaI == P1->mao.cartas[j]) {
+
+						P1->mao.cartas[j] = 'x';
+						break;
+					}
+				}
+
+				break;
+			}
+			case 'c': {
+				int j = 0;
+				P1->apostaI = 'C';
+				for (j = 0; j < 7; j++) {
+
+					if (P1->apostaI == P1->mao.cartas[j]) {
+
+						P1->mao.cartas[j] = 'x';
+						break;
+					}
+				}
+
+				break;
+			}
+			case 'T': {
+
+				int j = 0;
+
+				for (j = 0; j < 7; j++) {
+
+					if (P1->apostaI == P1->mao.cartas[j]) {
+
+						P1->mao.cartas[j] = 'x';
+						break;
+					}
+				}
+
+				break;
+			}
+			case 't': {
+				int j = 0;
+				P1->apostaI = 'T';
+				for (j = 0; j < 7; j++) {
+
+					if (P1->apostaI == P1->mao.cartas[j]) {
+
+						P1->mao.cartas[j] = 'x';
+						break;
+					}
+				}
+
+				break;
+
+			}
 			}
 
-			break;
-		}
-		case 'R': {
-			int j = 0;
-			for (j = 0; j < 7; j++) {
 
-				if (P1->apostaI == P1->mao.cartas[j]) {
-
-					P1->mao.cartas[j] = 'x';
-					break;
-				}
-			}
-
-			break;
-		}
-		case 'r': {
-			int j = 0;
-			P1->apostaI = 'R';
-			for (j = 0; j < 7; j++) {
-
-				if (P1->apostaI == P1->mao.cartas[j]) {
-
-					P1->mao.cartas[j] = 'x';
-					break;
-				}
-			}
-
-			break;
-		}
-		case 'C': {
-			int j = 0;
-			for (j = 0; j < 7; j++) {
-
-				if (P1->apostaI == P1->mao.cartas[j]) {
-
-					P1->mao.cartas[j] = 'x';
-					break;
-				}
-			}
-
-			break;
-		}
-		case 'c': {
-			int j = 0;
-			P1->apostaI = 'C';
-			for (j = 0; j < 7; j++) {
-
-				if (P1->apostaI == P1->mao.cartas[j]) {
-
-					P1->mao.cartas[j] = 'x';
-					break;
-				}
-			}
-
-			break;
-		}
-		case 'T': {
-			int j = 0;
-			
-			for (j = 0; j < 7; j++) {
-
-				if (P1->apostaI == P1->mao.cartas[j]) {
-
-					P1->mao.cartas[j] = 'x';
-					break;
-				}
-			}
-
-			break;
-		}
-		case 't': {
-			int j = 0;
-			P1->apostaI = 'T';
-			for (j = 0; j < 7; j++) {
-
-				if (P1->apostaI == P1->mao.cartas[j]) {
-
-					P1->mao.cartas[j] = 'x';
-					break;
-				}
-			}
-
-			break;
-		}
-		default:{
-			printf("Escolhe uma carta válida!");
-				}
-}
-
-
-	} while (P1->apostaI != 'L' && P1->apostaI != 'W' && P1->apostaI != 'w' && P1->apostaI != 'R' && P1->apostaI != 'C'&& P1->apostaI != 'T');
-			
-			printf(" Aposta principal: %c\n", P1->apostaI);
+			printf("Aposta principal: %c\n", P1->apostaI);
 			printf("Ficaste com estas cartas no teu deck :");
-			for (int i = 0; i < 7;i++) {
+			for (int i = 0; i < 7; i++) {
 				if (i == 6) {
 					printf("%c", P1->mao.cartas[i]);
-				}else
-				printf("%c,", P1->mao.cartas[i]);
+				}
+				else
+					printf("%c,", P1->mao.cartas[i]);
 			}
+		}
+		else {
+			printf("Carta nao encontrada na mao.\n");
+			
+		}
+	} while (verdadeiro != 1);
 }
 
-void novoJogo(){
+
+void printcartasparaapostaI(jogador P1) {
+	printf("\n%s cartas na mão: ", P1.nome);
+	for (int i = 0; i < 7; i++) {
+		if (i == 6) {
+			printf("%c ", P1.mao.cartas[i]);
+		}
+		else {
+			printf("%c, ", P1.mao.cartas[i]);
+		}
+	}
+	printf("\n");
+}
+
+void imprimirCartasNaMaoparajogada(jogador P1) {
+	printf("\n%s cartas na mão: ", P1.nome);
+	for (int i = 0; i < 6; i++) {
+		if (i == 5) {
+			printf("%c ", P1.mao.cartas[i]);
+		}
+		else {
+			printf("%c, ", P1.mao.cartas[i]);
+		}
+	}
+	printf("\n");
+	printf("Cartas de aposta: %c, %c", P1.apostaI, P1.apostafixa);
+}
+
+
+void novoJogo() {
 
 	baralho myB;
 	jogador P1;
+	
 	comecarbaralho(&myB);
 	scrambledeck(&myB);
-	scrambledeck(&myB);
+	embaralharapostainicial(&myB,6,&P1);
 	nomep1(&P1);
-	
+	system("cls");
 	FILE* fp = NULL;
 	fopen_s(&fp, "maindeck.txt", "w");
 	if (fp) {
 		saveBaralho(fp, &myB, &P1);
 		fclose(fp);
 	}
+	gotoxy(40, 15);
+	printf("Baralho inicial:\n");
 	printbaralho(myB);
 	system("pause");
-	p1mao(&P1,&myB);
+	p1mao(&P1, &myB);
 
 
-	fopen_s(&fp, "maindeck.txt","w");
+	fopen_s(&fp, "maindeck.txt", "w");
 	if (fp) {
 		savedeckplusp1(fp, &myB, &P1);
 
@@ -385,20 +525,27 @@ void novoJogo(){
 	printbaralho(myB);
 	system("pause");
 	system("cls");
-	printf("\n Player One: %s cartas na mão:\n", P1.nome);
-	for (int i = 0; i < 7; i++) {
-		printf("%c,",P1.mao.cartas[i]);
-	}
-	apostaInicial(&P1,&myB);
 
-	}
+	printcartasparaapostaI(P1);
+	apostaInicial(&P1, &myB);
 
+	removerElemento(&P1.mao.cartas, 7, 'x');
+
+	imprimirCartasNaMaoparajogada(P1);
+
+}
 
 int main(void){
 	
 	ecraInicial();
 	setlocale(LC_ALL,"Portuguese");
 	int escolha_menu;
+	char content[1000];
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleDisplayMode(hConsole, CONSOLE_FULLSCREEN_MODE, 0);
+
+
+	FILE* Rules;
 
 		do{
 			system("cls");
@@ -406,7 +553,7 @@ int main(void){
 			gotoxy(10, 10);	printf("1-Jogar uma Partida do Jogo ""A Lebre e a Tartaruga""\n");//Escolha A
 			gotoxy(10, 11);	printf("2-Carregar uma partida a partir de um ficheiro e continuar o jogo\n");//Escolha B
 			gotoxy(10, 12);	printf("3-Descrição do jogo\n");//Escolha C | Opção configurada e concluida :CHECKMARK:
-			gotoxy(10, 13); printf("0 -Sair\n");//Sair do jogo | Opção configurada e concluida :CHECKMARK:
+			gotoxy(10, 13); printf("0-Sair\n");//Sair do jogo | Opção configurada e concluida :CHECKMARK:
 					
 			gotoxy(10, 15); printf("Escolha agora o que deseja fazer:");
 			(void)scanf("%d",&escolha_menu);//Escolher a opção do menu
@@ -444,15 +591,14 @@ int main(void){
 							}
 							
 							case 3:{
+								setlocale(LC_ALL, "pt_PT.UTF-8");// UTF-8 para ler ficheiros .txt para pt-pt
 								system("cls");
 								printf("Descricao do jogo:");
-								FILE* rules = fopen("rules.txt","r");
-								int c;
-								while ((c = fgetc(rules)) != EOF)
-								{
-									putchar(c);
+								Rules = fopen("rules.txt","r");
+								while (fgets(content, sizeof(content), Rules) != NULL) {
+									printf("%s", content);
 								}
-								fclose(rules);
+								fclose(Rules);
 								system("pause");
 								break;//Não esquecer deste malandro
 							
