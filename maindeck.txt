@@ -1,0 +1,3 @@
+(x,x,x,x,x,x,x,x,x,x,x,x,x,x,W,C,C,W,C,L,C,W,R,R,W,T,L,W,L,T,R,R,W,T,W,W,L,w,R,C,T,C,R,R,R,T,L,L,R,C,R,T,L,L,T,C,T,R,C,w,T,W,W,R,C,W,T,T,C,C,w,T,L,R,W,L,T,C,R,L,L)
+ wertyu ->  T, R, L, C, L, L, L 
+ sdfghjk ->  L, T, L, W, C, T, T 

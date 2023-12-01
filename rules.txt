@@ -1,0 +1,2 @@
+Resumo- Jogo competitivo,baseado no conto com o mesmo nome, onde os apostam na vitória de um ou mais dos corredores em competição e de seguida influenciar o resultado da corrida a seu favor.
+Os corredores são 5 animais: a lebre, tartaruga, o lobo, a raposa e o cordeiro.
