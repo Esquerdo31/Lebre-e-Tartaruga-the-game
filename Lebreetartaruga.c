@@ -63,6 +63,33 @@ typedef struct pistaepodio{
 	bool no_podio;   // Indica se o personagem está no pódio
 } Personagem;
 
+void baralhodedescarte(baralho* myB) {
+
+	for (int i = 0; i < 80; i++) {
+		myB->descarte[i] = 'x';
+	}
+}
+
+void descartebaralho(baralho* myB, baralho_aposta* aposta) {
+
+
+	do {
+		for (int i = 0; i < myB->descarte; i++) {
+			if (aposta->cartas[i] != 'x') {
+				if (aposta->size != 0) {
+					if (myB->descarte != 'x') {
+
+						myB->descarte[i] = aposta->cartas[i];
+						aposta->cartas[i] = 'x';
+						aposta->size--;
+					}
+				}
+				else { break; }
+			}
+		}
+	} while (aposta->size != 0);
+}
+
 void comecarbaralho(baralho* myB) {
 
 	//L,T,W,w,R,C
@@ -574,7 +601,7 @@ int contar_cartas_na_mao(char carta, jogador* P1) {
 	return contador;
 }
 
-void escolher_cartajogo(jogador *P1, baralho* myB,baralho_aposta aposta) {
+void escolher_cartajogo(jogador *P1, baralho* myB,baralho_aposta* aposta) {
 	
 	
 	int verdadeiro = 0;
@@ -620,8 +647,8 @@ void escolher_cartajogo(jogador *P1, baralho* myB,baralho_aposta aposta) {
 			}
 
 			remover_cartas_da_mao(P1->jogo, quantidade,P1);
-			aposta.size = quantidade;
-			aposta = adicionar_carta_ao_baralho(P1->jogo, aposta);
+			aposta->size = quantidade;
+			*aposta = adicionar_carta_ao_baralho(P1->jogo, *aposta);
 
 
 			for (int i = 0; i < quantidade; i++) {
@@ -650,12 +677,12 @@ void escolher_cartajogo(jogador *P1, baralho* myB,baralho_aposta aposta) {
 					printf("%c,", P1->mao.cartas[i]);
 			}
 			printf("\nBaralho de aposta atual: ");
-			for (int i = 0; i < aposta.size; i++) {
-				if (i == aposta.size - 1) {
-					printf("%c", aposta.cartas[i]);
+			for (int i = 0; i < aposta->size; i++) {
+				if (i == aposta->size - 1) {
+					printf("%c", aposta->cartas[i]);
 				}
 				else {
-					printf("%c, ", aposta.cartas[i]);
+					printf("%c, ", aposta->cartas[i]);
 				}
 			}
 			printf("\n");
@@ -665,6 +692,7 @@ void escolher_cartajogo(jogador *P1, baralho* myB,baralho_aposta aposta) {
 
 		}
 	} while (verdadeiro != 1);
+	
 }
 
 void printcartasparaapostaI(jogador P1) {
@@ -743,7 +771,8 @@ void imprimirPista() {
 	printf("\n");
 }
 
-void moverPersonagem(jogador* P1, baralho_aposta* aposta) {
+void moverPersonagem(jogador* P1, baralho_aposta aposta) {
+
 
 	char carta = P1->jogo;
 	int countL = 0,avanco=0;
@@ -751,7 +780,7 @@ void moverPersonagem(jogador* P1, baralho_aposta* aposta) {
 	// Verifica se a carta é 'L' para definir o avanço
 	if (carta == 'L') {
 		// Verifica se já existem duas cartas 'L' jogadas
-		for (int i = 0; i < aposta->size; i++) {
+		for (int i = 0; i < aposta.size; i++) {
 			if (pista[i].tipo == 'L' && !pista[i].no_podio) {
 				countL++;
 			}
@@ -768,7 +797,7 @@ void moverPersonagem(jogador* P1, baralho_aposta* aposta) {
 	}
 	else if (carta == 'W') {
 		// Verifica se já existem duas cartas 'W' jogadas
-		for (int i = 0; i < aposta->size; i++) {
+		for (int i = 0; i < aposta.size; i++) {
 			if (pista[i].tipo == 'W' && !pista[i].no_podio) {
 				countL++;
 			}
@@ -785,7 +814,7 @@ void moverPersonagem(jogador* P1, baralho_aposta* aposta) {
 	}
 	else if (carta == 'T') {
 		// Verifica se já existem duas cartas 'T' jogadas
-		for (int i = 0; i < aposta->size; i++) {
+		for (int i = 0; i < aposta.size; i++) {
 			if (pista[i].tipo == 'T' && !pista[i].no_podio) {
 				countL++;
 			}
@@ -802,7 +831,7 @@ void moverPersonagem(jogador* P1, baralho_aposta* aposta) {
 	}
 	else if (carta == 'C') {
 		// Verifica se já existem duas cartas 'C' jogadas
-		for (int i = 0; i < aposta->size; i++) {
+		for (int i = 0; i < aposta.size; i++) {
 			if (pista[i].tipo == 'C' && !pista[i].no_podio) {
 				countL++;
 			}
@@ -819,7 +848,7 @@ void moverPersonagem(jogador* P1, baralho_aposta* aposta) {
 	}
 	else if (carta == 'R') {
 		// Verifica se já existem duas cartas 'R' jogadas
-		for (int i = 0; i < aposta->size; i++) {
+		for (int i = 0; i < aposta.size; i++) {
 			if (pista[i].tipo == 'R' && !pista[i].no_podio) {
 				countL++;
 			}
@@ -928,7 +957,8 @@ void novoJogo() {
 	jogador P1;
 	nothuman P2;
 	baralho_aposta aposta = { .size = 0,.maxsize = 8 };
-
+	
+	baralhodedescarte(&myB);
 	comecarbaralho(&myB);
 	
 	scrambledeck(&myB);
@@ -981,14 +1011,15 @@ void novoJogo() {
 
 	system("pause");
 	imprimirCartasNaMaoparajogada(P1);
-	escolher_cartajogo(&P1, &myB, aposta);
-	moverPersonagem(&P1, &aposta);
+	escolher_cartajogo(&P1, &myB, &aposta);
+	moverPersonagem(&P1, aposta);
 	system("pause");
 	system("cls");
 	printf("Posições após mover Personagem:\n");
 	
 	atualizarPosicoes(pista, PISTA_SIZE);
 	imprimirPista();
+	descartebaralho(&myB, &aposta);
 }
 
 int main(void) {
