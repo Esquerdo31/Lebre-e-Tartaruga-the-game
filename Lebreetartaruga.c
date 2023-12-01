@@ -1,9 +1,9 @@
-#include "lab.h"
+ï»¿#include "lab.h"
 #include <stdbool.h>
 #include <windows.h>
 
-void ecraInicial(){
-	
+void ecraInicial() {
+
 	setColor(MY_COLOR_CYAN, MY_COLOR_BLACK);
 	setFullScreen(true);
 	system("cls");
@@ -14,14 +14,20 @@ void ecraInicial(){
 	gotoxy(10, 22); system("pause");
 }
 
-typedef struct BARALHO{
-	int maxsize;
-	char cartas[81];
-	int size;
-	char descarte[81];
+typedef struct BARALHO {
+	int maxsize;	// Tamanho mÃ¡ximo do baralho de aposta
+	char cartas[81];	// Estrutura para representar o baralho total
+	int size;	// Tamanho atual do baralho de aposta
+	char descarte[81];	// Estrutura para representar o baralho de descarte
 	char apostasIniciais[6];
 
 }baralho;
+
+typedef struct {
+	char cartas[8];  // Estrutura para representar o baralho de aposta
+	int size;        // Tamanho atual do baralho de aposta
+	int maxsize;     // Tamanho mÃ¡ximo do baralho de aposta
+} baralho_aposta;
 
 typedef struct Jogador {
 
@@ -30,11 +36,22 @@ typedef struct Jogador {
 	baralho mao;
 	char apostaI;//O que cada jogador vai apostar
 	char apostafixa;
-	int pontos;// Para a pontuação final
-	
+	int pontos;// Para a pontuaï¿½ï¿½o final
+	char jogo;
 
 }jogador;
 
+typedef struct BOT{
+
+	char nome[50];
+	int type;
+	baralho mao;
+	char apostaI;//O que cada jogador vai apostar
+	char apostafixa;
+	int pontos;// Para a pontuaï¿½ï¿½o final
+
+
+}nothuman;
 
 void comecarbaralho(baralho* myB) {
 
@@ -98,7 +115,7 @@ void comecarbaralho(baralho* myB) {
 		}
 	}
 
-	
+
 }
 
 void printbaralho(baralho myB) {
@@ -111,7 +128,7 @@ void printbaralho(baralho myB) {
 		}
 		else
 			printf("%c,", myB.cartas[i]);
-		
+
 
 	}
 
@@ -130,7 +147,7 @@ void scrambledeck(baralho* myB) {
 
 }
 
-void embaralharapostainicial(baralho* myB, int tamanho,jogador* P1) {
+void embaralharapostainicial(baralho* myB, int tamanho, jogador* P1,nothuman* P2) {
 	for (int i = tamanho - 1; i > 0; i--) {
 		int j = rand() % (i + 1);
 
@@ -140,13 +157,22 @@ void embaralharapostainicial(baralho* myB, int tamanho,jogador* P1) {
 		myB->apostasIniciais[j] = temp;
 	}
 	P1->apostafixa = myB->apostasIniciais[0];
+	P2->apostafixa = myB->apostasIniciais[1];
 }
 
 void nomep1(jogador* P1) {
 	gotoxy(40, 14);
 	printf("Introduza o nome do Player One: \n");
 	gotoxy(40, 16);
-	(void)scanf("%s",P1->nome);
+	(void)scanf("%sÂ´", P1->nome);
+
+}
+
+void nomep2(nothuman* P2) {
+	gotoxy(40, 14);
+	printf("Introduza o nome do Playe Two: \n");
+	gotoxy(40, 16);
+	(void)scanf("%s", P2->nome);
 
 }
 
@@ -160,10 +186,39 @@ void p1mao(jogador* P1, baralho* myB) {
 		myB->cartas[i] = 'x';
 		if (i == P1->mao.maxsize) {
 			printf("%c", P1->mao.cartas[i]);
-			
-		}else
-		printf("%c,",P1->mao.cartas[i]);
+
+		}
+		else
+			printf("%c,", P1->mao.cartas[i]);
 	}
+
+}
+
+void p2mao(jogador* P1,nothuman* P2, baralho* myB) {
+	int i;
+	int posicao_maozinha = 0;;
+	P2->mao.maxsize = 7;
+	P2->mao.size = 0;
+	for (i = 0; i < P1->mao.maxsize + P2->mao.maxsize; i++) {
+		if (myB->cartas[i] != 'x') {
+			P2->mao.cartas[posicao_maozinha] = myB->cartas[i];
+			myB->cartas[i] = 'x';
+			posicao_maozinha++;
+			P2->mao.size++;
+			if (posicao_maozinha == P2->mao.maxsize) {
+				break;
+			}
+		}
+	}
+			for (int i = 0; i < P2->mao.maxsize; i++) {
+				if (i == P2->mao.maxsize) {
+					printf("%c", P2->mao.cartas[i]);
+
+				}
+				else
+					printf("%c,", P2->mao.cartas[i]);
+			}
+		
 	
 }
 
@@ -173,7 +228,7 @@ void removerElemento(char vetor[], int tamanho, char elemento) {
 	// Procura o elemento no vetor
 	for (i = 0; i < tamanho; i++) {
 		if (vetor[i] == elemento) {
-			// Move os elementos à direita do elemento a ser removido uma posição para a esquerda
+			// Move os elementos Ã  direita do elemento a ser removido uma posiÃ§ao para a esquerda
 			for (j = i; j < tamanho - 1; j++) {
 				vetor[j] = vetor[j + 1];
 			}
@@ -181,63 +236,55 @@ void removerElemento(char vetor[], int tamanho, char elemento) {
 			// Reduz o tamanho do vetor
 			tamanho--;
 
-			// Decrementa o índice para evitar pular um elemento
+			// Decrementa o ï¿½ndice para evitar pular um elemento
 			i--;
 		}
 	}
 }
 
-void jogadaInicial() {
-
-
-
-
-
-
-
-
-
-}
-
-void jogada(jogador* P1, baralho* myB) {
-
-
-
-
-
-}
-
-void saveBaralho(FILE* fp,baralho* myB,jogador* P1 ){
+void saveBaralho(FILE* fp, baralho* myB) {
 
 	int i = 0;
 	fprintf(fp, "(");
 	for (i = 0; i < 81; i++) {
-		if (i == 80){
-			fprintf(fp,"%c", myB->cartas[i]);
-		}else
-		fprintf(fp,"%c,", myB->cartas[i]);
-							}
-	fprintf(fp,")");
+		if (i == 80) {
+			fprintf(fp, "%c", myB->cartas[i]);
+		}
+		else
+			fprintf(fp, "%c,", myB->cartas[i]);
+	}
+	fprintf(fp, ")");
 	fclose(fp);
 }
 
-void savedeckplusp1(FILE* fp, baralho* myB, jogador* P1) { //Função serve para verificar se está a guardar tudo bem no ficheiro txt
+void savedeckplusp1(FILE* fp, baralho* myB, jogador* P1,nothuman* P2) { //FunÃ§ao serve para verificar se estï¿½ a guardar tudo bem no ficheiro txt
 
 	int i = 0;
 	fprintf(fp, "(");
 	for (i = 0; i < 81; i++) {
-		if(i==80){ 
-			fprintf(fp, "%c", myB->cartas[i]);}
-			else
-			fprintf(fp, "%c,", myB->cartas[i]); //Imprimir tudo igual há função anterior e normal saveBaralho
+		if (i == 80) {
+			fprintf(fp, "%c", myB->cartas[i]);
+		}
+		else
+			fprintf(fp, "%c,", myB->cartas[i]); //Imprimir tudo igual hÃ  funcao anterior e normal saveBaralho
 	}
-	fprintf(fp,")");
+	fprintf(fp, ")");
 	fprintf(fp, "\n %s -> ", P1->nome);
 	for (i = 0; i < 7; i++) {
 		if (i == 6) {
 			fprintf(fp, " %c ", P1->mao.cartas[i]);
-		}else
+		}
+		else
 			fprintf(fp, " %c,", P1->mao.cartas[i]);
+	}
+
+	fprintf(fp, "\n %s -> ", P2->nome);
+	for (i = 0; i < 7; i++) {
+		if (i == 6) {
+			fprintf(fp, " %c ", P2->mao.cartas[i]);
+		}
+		else
+			fprintf(fp, " %c,", P2->mao.cartas[i]);
 	}
 	fclose(fp);
 	printf(" \n");
@@ -254,20 +301,20 @@ void readBaralho(FILE* fp, baralho* myB) {
 	fgetc(fp); //descarta ','
 }
 
-// Função para verificar se uma carta está na mão
+// FuncÃ£o para verificar se uma carta estÃ¡ na mao
 bool cartaNaMao(char mao[], int tamanhoDaMao, char cartaProcurada) {
 	for (int i = 0; i < tamanhoDaMao; i++) {
 		if (mao[i] == cartaProcurada) {
-			return true; // Carta encontrada na mão
+			return true; // Carta encontrada na mï¿½o
 		}
 	}
-	return false; // Carta não encontrada na mão
+	return false; // Carta nï¿½o encontrada na mï¿½o
 }
 
 void apostaInicial(jogador* P1, baralho* myB) {
 
 	int verdadeiro = 0;
-	printf("\nTens estas cartas na tua mão:");
+	printf("\nTens estas cartas na tua mÃ£o:");
 	for (int i = 0; i < 7; i++) {
 		if (i == 6) {
 			printf("%c", P1->mao.cartas[i]);
@@ -300,7 +347,7 @@ void apostaInicial(jogador* P1, baralho* myB) {
 			}
 		}
 
-		if (cartaNaMao(P1->mao.cartas,7, P1->apostaI))
+		if (cartaNaMao(P1->mao.cartas, 7, P1->apostaI))
 		{
 			printf("Carta encontrada na mao!\n");
 			verdadeiro = 1;
@@ -459,14 +506,161 @@ void apostaInicial(jogador* P1, baralho* myB) {
 		}
 		else {
 			printf("Carta nao encontrada na mao.\n");
-			
+
+		}
+	} while (verdadeiro != 1);
+}
+
+void apostaInicialBot(nothuman* P2, baralho* myB) {
+
+	int indicedecartas = rand() % 7;
+	P2->apostaI = P2->mao.cartas[indicedecartas];
+	P2->mao.cartas[indicedecartas] = 'x';
+
+}
+
+
+//Adicionar ao baralho de aposta as cartas jogadas
+baralho_aposta adicionar_carta_ao_baralho(char carta, baralho_aposta aposta) {
+	aposta.maxsize = 8;
+	if (aposta.size < aposta.maxsize) {
+		aposta.cartas[aposta.size] = carta;
+		aposta.size++;
+	}
+	else {
+		printf("O baralho de aposta estÃ¡ cheio. NÃ£o Ã© possÃ­vel adicionar mais cartas.\n");
+	}
+
+	return aposta;
+}
+
+
+jogador remover_cartas_da_mao(char carta, int quantidade,jogador P1) {
+	jogador nova_mao = P1;
+
+	int removidas = 0;
+	for (int j = 0; j < nova_mao.mao.size; j++) {
+		if (carta == nova_mao.mao.cartas[j]) {
+			nova_mao.mao.cartas[j] = 'x';
+			removidas++;
+
+			if (removidas == quantidade) {
+				break;  // Sai do loop se o nÃºmero desejado de cartas iguais foi removido
+			}
+		}
+	}
+
+	return nova_mao;
+}
+
+
+
+// Verificar se a mao do jogador realmente tem cartas iguais para se jogar
+int contar_cartas_na_mao(char carta, jogador* P1) {
+	int contador = 0;
+	for (int i = 0; i < P1->mao.maxsize; i++) {
+		if (P1->mao.cartas[i] == carta) {
+			contador++;
+		}
+	}
+	return contador;
+}
+
+void escolher_cartajogo(jogador P1, baralho* myB) {
+	
+	
+	baralho_aposta aposta = { .size = 0,.maxsize = 8 };  // Inicializa o baralho de aposta
+	int verdadeiro = 0;
+	int quantidade;
+
+	do {
+		// Solicita uma carta para fazer de aposta Inicial
+		printf("\nEscolhe agora a tua carta da aposta inicial: ");
+		(void)scanf(" %c", &P1.jogo);
+		if (P1.jogo == 'l') {
+			P1.jogo = 'L';
+		}
+		else {
+			if (P1.jogo == 'r') {
+				P1.jogo = 'R';
+			}
+			else {
+				if (P1.jogo == 'c') {
+					P1.jogo = 'C';
+				}
+				else
+				{
+					if (P1.jogo == 't') {
+						P1.jogo = 'T';
+					}
+				}
+			}
+		}
+
+		if (cartaNaMao(P1.mao.cartas, 7, P1.jogo))
+		{
+			printf("Carta encontrada na mao!\n");
+			verdadeiro = 1;
+			printf("Quantas cartas iguais queres jogar: ");
+			(void)scanf(" %d", &quantidade);
+
+			int quantidade_na_mao = contar_cartas_na_mao(P1.jogo, &P1);
+
+			if (quantidade_na_mao < quantidade) {
+				printf("VocÃª nÃ£o tem cartas suficientes na mÃ£o.\n");
+				verdadeiro = 0;
+				continue;  // Reinicia o loop para nova escolha
+			}
+
+			P1 = remover_cartas_da_mao(P1.jogo, quantidade, P1);
+			aposta = adicionar_carta_ao_baralho(P1.jogo, aposta);
+
+
+			for (int i = 0; i < quantidade; i++) {
+				if (quantidade == 1) {
+					printf(" Jogaste: %c\n", P1.jogo);
+				}
+				else
+				{
+					if (i == quantidade - 1) {
+						printf(" %c\n", P1.jogo);
+					}
+					else
+					{
+						printf("Jogaste: %c,", P1.jogo);
+					}
+
+				}
+			}
+
+			printf("\nFicaste com estas cartas no teu deck :");
+			for (int i = 0; i < 6; i++) {
+				if (i == 5) {
+					printf("%c", P1.mao.cartas[i]);
+				}
+				else
+					printf("%c,", P1.mao.cartas[i]);
+			}
+			printf("\nBaralho de aposta atual: ");
+			for (int i = 0; i < aposta.size; i++) {
+				if (i == aposta.size - 1) {
+					printf("%c", aposta.cartas[i]);
+				}
+				else {
+					printf("%c, ", aposta.cartas[i]);
+				}
+			}
+		}
+		else {
+			printf("Carta nao encontrada na mao.\n");
+
 		}
 	} while (verdadeiro != 1);
 }
 
 
 void printcartasparaapostaI(jogador P1) {
-	printf("\n%s cartas na mão: ", P1.nome);
+	printf("\n%s cartas na mÃ£o: ", P1.nome);
 	for (int i = 0; i < 7; i++) {
 		if (i == 6) {
 			printf("%c ", P1.mao.cartas[i]);
@@ -479,7 +673,7 @@ void printcartasparaapostaI(jogador P1) {
 }
 
 void imprimirCartasNaMaoparajogada(jogador P1) {
-	printf("\n%s cartas na mão: ", P1.nome);
+	printf("\n%s cartas na mÃ£o: ", P1.nome);
 	for (int i = 0; i < 6; i++) {
 		if (i == 5) {
 			printf("%c ", P1.mao.cartas[i]);
@@ -492,33 +686,65 @@ void imprimirCartasNaMaoparajogada(jogador P1) {
 	printf("Cartas de aposta: %c, %c", P1.apostaI, P1.apostafixa);
 }
 
+void imprimirCartasNaMaoparajogadabot(nothuman P2) {
+	printf("\n%s cartas na mÃ£o: ", P2.nome);
+	for (int i = 0; i < 6; i++) {
+		if (i == 5) {
+			printf("%c ", P2.mao.cartas[i]);
+		}
+		else {
+			printf("%c, ",P2.mao.cartas[i]);
+		}
+	}
+	printf("\n");
+	printf("Cartas de aposta: %c, %c", P2.apostaI, P2.apostafixa);
+}
+
+
+void jogada(jogador P1,nothuman P2, baralho* myB) {
+
+	imprimirCartasNaMaoparajogada(P1);
+	escolher_cartajogo(P1, &myB);
+
+
+}
+
+
 
 void novoJogo() {
 
 	baralho myB;
 	jogador P1;
-	
+	nothuman P2;
+
 	comecarbaralho(&myB);
+	
 	scrambledeck(&myB);
-	embaralharapostainicial(&myB,6,&P1);
+	
+	embaralharapostainicial(&myB, 6, &P1,&P2);
+	
 	nomep1(&P1);
 	system("cls");
+	nomep2(&P2);
+	system("cls");
+	
 	FILE* fp = NULL;
 	fopen_s(&fp, "maindeck.txt", "w");
 	if (fp) {
-		saveBaralho(fp, &myB, &P1);
+		saveBaralho(fp, &myB);
 		fclose(fp);
 	}
 	gotoxy(40, 15);
 	printf("Baralho inicial:\n");
 	printbaralho(myB);
 	system("pause");
+	
 	p1mao(&P1, &myB);
-
+	p2mao(&P1,&P2,&myB);
 
 	fopen_s(&fp, "maindeck.txt", "w");
 	if (fp) {
-		savedeckplusp1(fp, &myB, &P1);
+		savedeckplusp1(fp, &myB, &P1,&P2);
 
 		fclose(fp);
 	}
@@ -528,17 +754,25 @@ void novoJogo() {
 
 	printcartasparaapostaI(P1);
 	apostaInicial(&P1, &myB);
+	apostaInicialBot(&P2, &myB);
 
 	removerElemento(&P1.mao.cartas, 7, 'x');
+	removerElemento(&P2.mao.cartas, 7, 'x');
+
 
 	imprimirCartasNaMaoparajogada(P1);
+	imprimirCartasNaMaoparajogadabot(P2);
+	system("cls");
 
+	jogada(P1, P2, &myB);
 }
 
-int main(void){
+int main(void) {
 	
+	srand(time(NULL));
 	ecraInicial();
-	setlocale(LC_ALL,"Portuguese");
+	
+	setlocale(LC_ALL, "Portuguese");
 	int escolha_menu;
 	char content[1000];
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -547,78 +781,78 @@ int main(void){
 
 	FILE* Rules;
 
-		do{
+	do {
+		system("cls");
+		gotoxy(10, 8); printf("Escolha agora o que deseja fazer:\n");
+		gotoxy(10, 10);	printf("1-Jogar uma Partida do Jogo ""A Lebre e a Tartaruga""\n");//Escolha A
+		gotoxy(10, 11);	printf("2-Carregar uma partida a partir de um ficheiro e continuar o jogo\n");//Escolha B
+		gotoxy(10, 12);	printf("3-Descriï¿½ï¿½o do jogo\n");//Escolha C | Opï¿½ï¿½o configurada e concluida :CHECKMARK:
+		gotoxy(10, 13); printf("0-Sair\n");//Sair do jogo | Opï¿½ï¿½o configurada e concluida :CHECKMARK:
+
+		gotoxy(10, 15); printf("Escolha agora o que deseja fazer:");
+		(void)scanf("%d", &escolha_menu);//Escolher a opï¿½ï¿½o do menu
+
+		switch (escolha_menu) {
+
+		case 1: {
+
+			system("cls");//Limpar o texto anterior 
+			novoJogo();
+
+			printf("\nO programa foi bem executado atï¿½ aqui\n");//Ponto de verificaï¿½ï¿½o
+			system("pause");//Parar o programa para verificar
+			break;//Nï¿½o esquecer deste malandro
+		}
+
+		case 2: {
+			setBackColor(MY_COLOR_DARK_GRAY);
+
+			system("cls"); //Limpar o texto anterior 
+
+			//carregarjogo();
+			int i = 0;
+			for (i = 0; i < 15; i++) {
+				setForeColor(0 + i, i + 1);
+				showRectAt(3 + i * 4, 5, 3, 3);
+
+			}
+
+
+			gotoxy(20, 20);
+			printf("O programa foi bem executado ate aqui\n");//Ponto de verificaï¿½ï¿½o
+			system("pause");//Parar o programa para verificar
+			break;//Nï¿½o esquecer deste malandro
+		}
+
+		case 3: {
+			setlocale(LC_ALL, "pt_PT.UTF-8");// UTF-8 para ler ficheiros .txt para pt-pt
 			system("cls");
-			gotoxy(10, 8); printf("Escolha agora o que deseja fazer:\n");
-			gotoxy(10, 10);	printf("1-Jogar uma Partida do Jogo ""A Lebre e a Tartaruga""\n");//Escolha A
-			gotoxy(10, 11);	printf("2-Carregar uma partida a partir de um ficheiro e continuar o jogo\n");//Escolha B
-			gotoxy(10, 12);	printf("3-Descrição do jogo\n");//Escolha C | Opção configurada e concluida :CHECKMARK:
-			gotoxy(10, 13); printf("0-Sair\n");//Sair do jogo | Opção configurada e concluida :CHECKMARK:
-					
-			gotoxy(10, 15); printf("Escolha agora o que deseja fazer:");
-			(void)scanf("%d",&escolha_menu);//Escolher a opção do menu
+			printf("Descricao do jogo:");
+			Rules = fopen("rules.txt", "r");
+			while (fgets(content, sizeof(content), Rules) != NULL) {
+				printf("%s", content);
+			}
+			fclose(Rules);
+			system("pause");
+			break;//Nï¿½o esquecer deste malandro
 
-				switch(escolha_menu){ 
-				
-							case 1: {
-								
-								system("cls");//Limpar o texto anterior 
-								novoJogo();
-								
-								printf("\nO programa foi bem executado até aqui\n");//Ponto de verificação
-									system("pause");//Parar o programa para verificar
-									break;//Não esquecer deste malandro
-							}
-				
-							case 2: {
-								setBackColor(MY_COLOR_DARK_GRAY);
+		}
 
-								system("cls"); //Limpar o texto anterior 
-								
-								 //carregarjogo();
-								int i = 0;
-								for(i = 0; i < 15; i++) {
-									setForeColor(0 + i,i+1);
-									showRectAt(3+i*4, 5, 3, 3);
+		case 0: {
+			printf("Saiu do programa\n");//Sair do programa
+			break;
+		}
+		default: {
+			//Default para voltar ao ciclo e escolher novamente um nï¿½mero
 
-								}
-								
-								
-								gotoxy(20, 20);
-								printf("O programa foi bem executado ate aqui\n");//Ponto de verificação
-									system("pause");//Parar o programa para verificar
-									break;//Não esquecer deste malandro
-							}
-							
-							case 3:{
-								setlocale(LC_ALL, "pt_PT.UTF-8");// UTF-8 para ler ficheiros .txt para pt-pt
-								system("cls");
-								printf("Descricao do jogo:");
-								Rules = fopen("rules.txt","r");
-								while (fgets(content, sizeof(content), Rules) != NULL) {
-									printf("%s", content);
-								}
-								fclose(Rules);
-								system("pause");
-								break;//Não esquecer deste malandro
-							
-							}
-							
-							case 0:{
-									printf("Saiu do programa\n");//Sair do programa
-									break;
-									}
-							default:{
-								//Default para voltar ao ciclo e escolher novamente um número
-								
-								printf("Escolha um numero pertencente ha lista!\n");
-								system("pause");
-								break;
+			printf("Escolha um numero pertencente ha lista!\n");
+			system("pause");
+			break;
 
-							}
-				}
+		}
+		}
 
-		} while (escolha_menu != 0);//Sair do jogo e fechar o programa
+	} while (escolha_menu != 0);//Sair do jogo e fechar o programa
 
 
 
