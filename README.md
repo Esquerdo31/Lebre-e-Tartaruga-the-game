@@ -1,11 +1,3 @@
-
-Update-6
-One of the biggest updates I've pushed so far, everything is looking great now!
-There are a couple of decks still missing but the basics for the game are complete(except one deck"I need to sleep will do it tomorrow").
-Fixed various bugs, now the biggest challenge will be setting the rules and the table
-You will also see new functions to make the process of internal verification while the game is still in the early development.
-Any doubts you can always contact me throughtout my Instagram(GitHub bio)
-
 =======
 
 # Lebre-e-Tartaruga-the-game
@@ -21,6 +13,7 @@ The project itself is a game that almost everyone knows called the The Turtle an
 Still new to this GitHub thing but trying hard to understand it, will try to upload every change I make to the work to see what I've done and what could be better.
 
 I've made quiet new changes to the program so just go to master and search for the latest update! (1/12/2023).
+Well Christmas came and also new year but exams don't stop neitheir did I, new update improves the performance a little bit and now you can see the caracthers in the raceway! (04/01/2024)
 
 
 
