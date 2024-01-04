@@ -1,10 +1,10 @@
 ﻿#include "lab.h"
 #include <stdbool.h>
-#include <windows.h>
 
-#define PISTA_SIZE 14
+
 #define NUM_PERSONAGENS 5
-#define NUM_PODIO 3
+#define TAM_PISTA 13
+#define NUM_RIACHOS 2
 
 void ecraInicial() {
 
@@ -52,16 +52,125 @@ typedef struct BOT{
 	baralho mao;
 	char apostaI;//O que cada jogador vai apostar
 	char apostafixa;
-	int pontos;// Para a pontua��o final
+	int pontos;// Para a pontuação final
 
 
 }nothuman;
 
-typedef struct pistaepodio{
-	char tipo;     // Tipo de personagem: C, L, T, W, R
+// Estrutura para representar um personagem
+typedef struct {
+	char nome;
 	int posicao;
-	bool no_podio;   // Indica se o personagem está no pódio
+	int ordemChegada; // Ordem de chegada para o pódio (1, 2, 3)
 } Personagem;
+
+
+// Função para inicializar os personagens na pista
+void inicializarPersonagens(Personagem personagens[]) {
+	personagens[0].nome = 'L';
+	personagens[1].nome = 'T';
+	personagens[2].nome = 'W';
+	personagens[3].nome = 'R';
+	personagens[4].nome = 'C';
+
+	for (int i = 0; i < NUM_PERSONAGENS; i++) {
+		personagens[i].posicao = 0;    // Todos começam na posição 0 (partida)
+		personagens[i].ordemChegada = 0; // Inicialmente, nenhum jogador chegou
+	}
+}
+
+// Função para imprimir a pista com a posição dos personagens e riachos
+void imprimirPista(const Personagem personagens[], const int riachos[]) {
+	// Imprimir linha superior da pista
+	for (int i = 0; i < TAM_PISTA + 2; i++) {
+		printf("-");
+	}
+	printf("\n");
+
+	// Imprimir pista
+	for (int i = 0; i <= TAM_PISTA; i++) {
+		printf("|");
+
+		// Imprimir partida, chegada e riachos
+		if (i == 0) {
+			printf("P");
+		}
+		else if (i == TAM_PISTA) {
+			printf("C");
+		}
+		else {
+			// Imprimir riachos
+			int riachoEncontrado = 0;
+			for (int j = 0; j < NUM_RIACHOS; j++) {
+				if (riachos[j] == i) {
+					printf("~"); // Representa um riacho
+					riachoEncontrado = 1;
+					break;
+				}
+			}
+
+			// Imprimir personagens
+			for (int j = 0; j < NUM_PERSONAGENS; j++) {
+				if (personagens[j].posicao == i) {
+					printf("%c", personagens[j].nome);
+					riachoEncontrado = 1;
+				}
+			}
+
+			// Preencher espaços vazios
+			if (!riachoEncontrado) {
+				printf(" ");
+			}
+		}
+
+		printf("|");
+	}
+
+	printf("\n");
+
+	// Imprimir linha inferior da pista
+	for (int i = 0; i < TAM_PISTA + 2; i++) {
+		printf("-");
+	}
+	printf("\n");
+
+	// Imprimir posições dos jogadores
+	printf("Jogadores: ");
+	for (int i = 0; i < NUM_PERSONAGENS; i++) {
+		printf("%c(%d) ", personagens[i].nome, personagens[i].posicao);
+	}
+	printf("\n");
+}
+
+// Função para verificar se pelo menos três jogadores passaram a linha de chegada
+int verificaPodio(Personagem personagens[]) {
+	int contadorChegada = 0;
+
+	for (int i = 0; i < NUM_PERSONAGENS; i++) {
+		if (personagens[i].ordemChegada != 0) {
+			contadorChegada++;
+		}
+	}
+
+	// Verificar se pelo menos três jogadores chegaram
+	if (contadorChegada >= 3) {
+		return 1; // Retorna 1 indicando que pelo menos três jogadores chegaram
+	}
+
+	return 0; // Retorna 0 se ainda não houver três jogadores que chegaram
+}
+
+
+void imprimirPodio(const Personagem personagens[]) {
+	printf("\n\nPódio:\n");
+
+	// Imprimir todos os jogadores que chegaram ao pódio
+	for (int i = 0; i < NUM_PERSONAGENS; i++) {
+		if (personagens[i].ordemChegada > 0) {
+			printf("%dº lugar: Jogador %c - Posição: %d\n", personagens[i].ordemChegada, personagens[i].nome, personagens[i].posicao);
+		}
+	}
+}
 
 void baralhodedescarte(baralho* myB) {
 
@@ -90,6 +199,17 @@ void descartebaralho(baralho* myB, baralho_aposta* aposta) {
 	} while (aposta->size != 0);
 }
 
+void apostasIniciaiscomecar(baralho* myB) {
+
+		myB->apostasIniciais[0] = 'L';
+		myB->apostasIniciais[1] = 'T';
+		myB->apostasIniciais[2] = 'W';
+		myB->apostasIniciais[3] = 'R';
+		myB->apostasIniciais[4] = 'C';
+	
+
+}
+
 void comecarbaralho(baralho* myB) {
 
 	//L,T,W,w,R,C
@@ -110,9 +230,7 @@ void comecarbaralho(baralho* myB) {
 
 		myB->cartas[i] = 'T';
 		myB->size++;
-		if (i == 34) {
-			myB->apostasIniciais[1] = 'T';
-		}
+		
 	}
 
 
@@ -120,36 +238,28 @@ void comecarbaralho(baralho* myB) {
 
 		myB->cartas[i] = 'W';
 		myB->size++;
-		if (i == 37) {
-			myB->apostasIniciais[2] = 'W';
-		}
+		
 	}
 
 	for (i = 48; i < 51; i++) {
 
 		myB->cartas[i] = 'w';
 		myB->size++;
-		if (i == 50) {
-			
-		}
+
 	}
 
 	for (i = 51; i < 66; i++) {
 
 		myB->cartas[i] = 'R';
 		myB->size++;
-		if (i == 65) {
-			myB->apostasIniciais[3] = 'R';
-		}
+	
 	}
 
 	for (i = 66; i < 81; i++) {
 
 		myB->cartas[i] = 'C';
 		myB->size++;
-		if (i == 80) {
-			myB->apostasIniciais[4] = 'C';
-		}
+		
 	}
 
 
@@ -231,6 +341,31 @@ void p1mao(jogador* P1, baralho* myB) {
 
 }
 
+void refillp1mao(jogador* P1, baralho* myB) {
+
+	P1->mao.maxsize = 6;
+	int i = 0;
+	int j = 0;
+	while (P1->mao.size != P1->mao.maxsize) {
+		if (myB->cartas[i] != 'x') {
+			do {
+				if (P1->mao.cartas[j] == 'x') {
+					P1->mao.cartas[j] = myB->cartas[i];
+					myB->cartas[i] = 'x';
+					P1->mao.size++;
+
+				}
+				j++;
+			} while (P1->mao.cartas[j] == 'x');
+		}
+		i++;
+	}
+}
+		
+	
+
+
+
 void p2mao(jogador* P1,nothuman* P2, baralho* myB) {
 	int i;
 	int posicao_maozinha = 0;;
@@ -273,7 +408,7 @@ void removerElemento(char vetor[], int tamanho, char elemento) {
 			// Reduz o tamanho do vetor
 			tamanho--;
 
-			// Decrementa o �ndice para evitar pular um elemento
+			// Decrementa o indice para evitar pular um elemento
 			i--;
 		}
 	}
@@ -294,7 +429,7 @@ void saveBaralho(FILE* fp, baralho* myB) {
 	fclose(fp);
 }
 
-void savedeckplusp1(FILE* fp, baralho* myB, jogador* P1,nothuman* P2) { //Funçao serve para verificar se est� a guardar tudo bem no ficheiro txt
+void savedeckplusp(FILE* fp, baralho* myB, jogador* P1,nothuman* P2) { //Funçao serve para verificar se est� a guardar tudo bem no ficheiro txt
 
 	int i = 0;
 	fprintf(fp, "(");
@@ -338,7 +473,7 @@ void readBaralho(FILE* fp, baralho* myB) {
 	fgetc(fp); //descarta ','
 }
 
-// Funcão para verificar se uma carta está na mao
+// Função para verificar se uma carta está na mao
 bool cartaNaMao(char mao[], int tamanhoDaMao, char cartaProcurada) {
 	for (int i = 0; i < tamanhoDaMao; i++) {
 		if (mao[i] == cartaProcurada) {
@@ -590,6 +725,7 @@ jogador remover_cartas_da_mao(char carta, int quantidade,jogador* P1) {
 	return *P1;
 }
 
+
 // Verificar se a mao do jogador realmente tem cartas iguais para se jogar
 int contar_cartas_na_mao(char carta, jogador* P1) {
 	int contador = 0;
@@ -609,8 +745,8 @@ void escolher_cartajogo(jogador *P1, baralho* myB,baralho_aposta* aposta) {
 
 	do {
 		// Solicita uma carta para fazer de aposta Inicial
-		printf("\nEscolhe agora a tua carta da aposta inicial: ");
-		(void)scanf(" %c",&P1->jogo);
+		printf("\nEscolhe agora a tua carta da aposta : ");
+		(void)scanf(" %c", &P1->jogo);
 		if (P1->jogo == 'l') {
 			P1->jogo = 'L';
 		}
@@ -646,14 +782,15 @@ void escolher_cartajogo(jogador *P1, baralho* myB,baralho_aposta* aposta) {
 				continue;  // Reinicia o loop para nova escolha
 			}
 
-			remover_cartas_da_mao(P1->jogo, quantidade,P1);
+			remover_cartas_da_mao(P1->jogo, quantidade, P1);
 			aposta->size = quantidade;
 			*aposta = adicionar_carta_ao_baralho(P1->jogo, *aposta);
 
-
+			int h = 0;
 			for (int i = 0; i < quantidade; i++) {
+				
 				if (quantidade == 1) {
-					printf(" Jogaste: %c\n", P1->jogo);
+					printf(" %c\n", P1->jogo);
 				}
 				else
 				{
@@ -662,11 +799,19 @@ void escolher_cartajogo(jogador *P1, baralho* myB,baralho_aposta* aposta) {
 					}
 					else
 					{
-						printf("Jogaste: %c,", P1->jogo);
-					}
+						if (h == 1) {
+							printf(" %c,", P1->jogo);
 
+						}
+						else
+					
+					printf("Jogaste: %c,", P1->jogo);
+					h++;
 				}
+
 			}
+		}
+	P1->mao.size= P1->mao.size - quantidade;
 
 			printf("\nFicaste com estas cartas no teu deck :");
 			for (int i = 0; i < 6; i++) {
@@ -733,222 +878,188 @@ void imprimirCartasNaMaoparajogadabot(nothuman P2) {
 		}
 	}
 	printf("\n");
-	printf("Cartas de aposta: %c, %c", P2.apostaI, P2.apostafixa);
+	printf("Cartas de aposta: %c, %c\n", P2.apostaI, P2.apostafixa);
 }
 
 
-Personagem pista[PISTA_SIZE]; // Pista com tamanho fixo
-
-void inicializarPista() {
-	for (int i = 0; i < PISTA_SIZE; i++) {
-		pista[i].tipo = ' ';
-		pista[i].posicao = i + 1;
-		pista[i].no_podio = 0;
-	}
-	pista[0].tipo = 'S';  // Saída no início da pista
-	pista[PISTA_SIZE - 1].tipo = 'E';  // Chegada no final da pista
-}
-
-void imprimirPista() {
+//void mover(Personagem* personagem,baralho_aposta cartas) {
+//	int avanco = 0;
+//	personagem->posicao += avanco;
+//	
+//	for (int i=0; i< cartas.size;i++){
+//		switch (cartas.cartas[i]) {
+//		case 'L': {
+//			avanco = 1;
+//			break;
+//		}
+//		case 'W': {
+//			avanco = 3;
+//			break;
+//		}
+//		case 'T': {
+//			avanco = 6;
+//			break;
+//		}
+//		case 'R': {
+//			avanco = -6;
+//			break;
+//		}
+//		case 'C': {
+//			avanco = -3;
+//			break;
+//		}
+//		}
+//
+//	if (personagem->posicao >= TAM_PISTA) {
+//		personagem->posicao = TAM_PISTA;
+//		if (personagem->ordemChegada == 0) {
+//			// Se o jogador ainda não chegou, registra a ordem de chegada como 1º, 2º ou 3º
+//			static int ordemChegadaAtual = 1;
+//			personagem->ordemChegada = ordemChegadaAtual++;
+//		}
+//	}
+//}
 	
-	for (int i = 0; i < PISTA_SIZE; i++) {
-		if (pista[i].no_podio) {
-			printf("%c ", pista[i].tipo);
-		}
-		else if (pista[i].tipo == ' ') {
-			printf("|----| ");
-		}
-		else {
-			if (i < PISTA_SIZE - 1 && pista[i].tipo == pista[i + 1].tipo) {
-				printf("%c%c ", pista[i].tipo, pista[i + 1].tipo);
-				i++;  // Pula para a próxima posição para evitar impressão duplicada
+
+// Função para verificar se há uma carta 'W' no deck de cartas
+	int temCartaW(baralho_aposta cartas[], int num_cartas) {
+		for (int i = 0; i < num_cartas; i++) {
+			if (cartas->cartas[i] == 'w') {
+				return 1; // Encontrou uma carta 'w'
 			}
-			else {
-				printf("%c ", pista[i].tipo);
+		}
+		return 0; // Não encontrou nenhuma carta 'w'
+	}
+
+
+
+	// Função para mover um personagem com base nas cartas da aposta
+	void mover(Personagem* personagem, char cartas[], int num_cartas) {
+		int avancoL = 0;
+		int avancoT = 0;
+		int avancoW = 0;
+		int avancoR = 0;
+		int avancoC = 0;
+
+
+		if (!temCartaW(cartas, num_cartas)) {
+
+			// Se não há carta 'w', o personagem avança de acordo com as cartas
+			for (int i = 0; i < num_cartas; i++) {
+				switch (cartas[i]) {
+				case 'L': {
+					int pos=0;
+					pos++;
+					avancoL+= pos ;
+					break;
+				}
+				case 'T': {
+					int pos = 0;
+					pos++;
+					avancoT += pos;
+					break;
+				}
+				case 'W': {
+					int pos = 0;
+					
+					pos++;
+					avancoW += pos;
+					break;
+				}
+				case 'R': {
+					int pos = 0;
+				
+					pos++;
+					avancoR += pos;
+					break;
+				}
+				case 'C': {
+					int pos = 0;
+					
+					pos++;
+					avancoC += pos;
+					break;
+				}
+				}
+
 			}
+
+			personagem[0].posicao =+avancoL;
+			personagem[1].posicao =+avancoT;
+			personagem[2].posicao =+avancoW;
+			personagem[3].posicao =+avancoR;
+			personagem[4].posicao =+avancoC;
+
+		}
+		else
+		{
+
+			// Se há carta 'w', o personagem avança pos
+			int pos=0;
+			
+				for (int i = 0; i < num_cartas; i++) {
+					switch (cartas[i]) {
+			case 'W': {
+				pos += 1;
+				break;
+			}
+				}
+					if (pos == 1) {
+						personagem['W'].posicao = pos;
+						
+					}
+					else {
+						personagem['W'].posicao = pos-1;
+					}
+	
+
+					if (personagem->posicao >= TAM_PISTA) {
+						personagem->posicao = TAM_PISTA;
+						if (personagem->ordemChegada == 0) {
+							// Se o jogador ainda não chegou, registra a ordem de chegada como 1º, 2º ou 3º
+							static int ordemChegadaAtual = 1;
+							personagem->ordemChegada = ordemChegadaAtual++;
+						}
+						break;  // Saia do loop se o personagem já chegou
+					}
+			}
+		}
+
+
+		}
+
+
+int verifica_cartas(baralho_aposta cartas, int tamanho) {
+	int contagem[5] = { 0 }; // L, W, T, R, C
+
+	for (int i = 0; i < tamanho; i++) {
+		switch (cartas.cartas[i]) {
+		case 'L':
+			contagem[0]++;
+			break;
+		case 'W':
+			contagem[1]++;
+			break;
+		case 'T':
+			contagem[2]++;
+			break;
+		case 'R':
+			contagem[3]++;
+			break;
+		case 'C':
+			contagem[4]++;
+			break;
 		}
 	}
-	printf("\n");
+
+	for (int i = 0; i < 5; i++) {
+		if (contagem[i] >= 4) {
+			return 1; // Pelo menos quatro cartas de um tipo encontrado
+		}
+	}
+
+	return 0; // Quatro cartas do tipo não encontradas
 }
-
-void moverPersonagem(jogador* P1, baralho_aposta aposta) {
-
-
-	char carta = P1->jogo;
-	int countL = 0,avanco=0;
-
-	// Verifica se a carta é 'L' para definir o avanço
-	if (carta == 'L') {
-		// Verifica se já existem duas cartas 'L' jogadas
-		for (int i = 0; i < aposta.size; i++) {
-			if (pista[i].tipo == 'L' && !pista[i].no_podio) {
-				countL++;
-			}
-		}
-
-		if (countL < 2) {
-			// Se ainda não foram jogadas duas cartas 'L', avança 1 casa
-			avanco = 1;
-		}
-		else {
-			// Se já foram jogadas duas cartas 'L', avança 2 casas
-			avanco = 2;
-		}
-	}
-	else if (carta == 'W') {
-		// Verifica se já existem duas cartas 'W' jogadas
-		for (int i = 0; i < aposta.size; i++) {
-			if (pista[i].tipo == 'W' && !pista[i].no_podio) {
-				countL++;
-			}
-		}
-
-		if (countL < 2) {
-			// Se ainda não foram jogadas duas cartas 'W', avança 1 casa
-			avanco = 1;
-		}
-		else {
-			// Se já foram jogadas duas cartas 'W', avança 2 casas
-			avanco = 2;
-		}
-	}
-	else if (carta == 'T') {
-		// Verifica se já existem duas cartas 'T' jogadas
-		for (int i = 0; i < aposta.size; i++) {
-			if (pista[i].tipo == 'T' && !pista[i].no_podio) {
-				countL++;
-			}
-		}
-
-		if (countL < 2) {
-			// Se ainda não foram jogadas duas cartas 'T', avança 1 casa
-			avanco = 1;
-		}
-		else {
-			// Se já foram jogadas duas cartas 'T', avança 2 casas
-			avanco = 2;
-		}
-	}
-	else if (carta == 'C') {
-		// Verifica se já existem duas cartas 'C' jogadas
-		for (int i = 0; i < aposta.size; i++) {
-			if (pista[i].tipo == 'C' && !pista[i].no_podio) {
-				countL++;
-			}
-		}
-
-		if (countL < 2) {
-			// Se ainda não foram jogadas duas cartas 'C', avança 1 casa
-			avanco = 1;
-		}
-		else {
-			// Se já foram jogadas duas cartas 'C', avança 2 casas
-			avanco = 2;
-		}
-	}
-	else if (carta == 'R') {
-		// Verifica se já existem duas cartas 'R' jogadas
-		for (int i = 0; i < aposta.size; i++) {
-			if (pista[i].tipo == 'R' && !pista[i].no_podio) {
-				countL++;
-			}
-		}
-
-		if (countL < 2) {
-			// Se ainda não foram jogadas duas cartas 'R', avança 1 casa
-			avanco = 1;
-		}
-		else {
-			// Se já foram jogadas duas cartas 'R', avança 2 casas
-			avanco = 2;
-		}
-	}
-
-	for (int i = 0; i < NUM_PERSONAGENS; i++) {
-		if (pista[i].tipo == carta && !pista[i].no_podio) {
-			int novaPosicao = pista[i].posicao + avanco;
-
-			// Garante que não ultrapassa o final da pista sem transpor "E"
-			if (novaPosicao >= PISTA_SIZE - 1) {
-				// Verifica se está no "E" (chegada) e ajusta a posição
-				if (pista[i].tipo == 'E') {
-					pista[i].posicao = PISTA_SIZE - 1;
-					pista[i].no_podio = true;  // Chegou ao final e entra no pódio
-				}
-				else {
-					// Se não está no "E", ajusta a posição sem ultrapassar "S"
-					pista[i].posicao = PISTA_SIZE - 2;
-				}
-			}
-			else if (novaPosicao < 0) {
-				// Garante que não ultrapassa "S" (posição inicial)
-				pista[i].posicao = 0;
-			}
-			else {
-				// Se não ultrapassou o final nem "S", atualiza a posição normalmente
-				pista[i].posicao = novaPosicao;
-			}
-		}
-	}
-
-	// Verifica se há mais de um personagem na mesma posição
-	for (int j = 0; j < PISTA_SIZE; j++) {
-		int count = 0;
-		for (int h = 0; h < NUM_PERSONAGENS; h++) {
-			if (pista[h].posicao == j && !pista[h].no_podio) {
-				count++;
-			}
-		}
-		if (count > 1) {
-			// Imprime os personagens que estão na mesma posição
-			printf("Posição %d: ", j);
-			for (int h = 0; h < NUM_PERSONAGENS; h++) {
-				if (pista[h].posicao == j && !pista[h].no_podio) {
-					printf("%c ", pista[h].tipo);
-				}
-			}
-			printf("\n");
-		}
-	}
-}
-
-void atualizarPosicoes(Personagem pista[], int tamanhoPista) {
-	for (int i = 0; i < tamanhoPista; i++) {
-		// Se o personagem não estiver no pódio, atualize a posição
-		if (!pista[i].no_podio) {
-			int novaPosicao = pista[i].posicao - 1;
-
-			// Garante que não ultrapassa o final da pista sem transpor "E"
-			if (novaPosicao >= tamanhoPista - 1) {
-				// Verifica se está no "E" (chegada) e ajusta a posição
-				if (pista[i].tipo == 'E') {
-					pista[i].posicao = tamanhoPista - 1;
-					pista[i].no_podio = true;  // Chegou ao final e entra no pódio
-				}
-				else {
-					// Se não está no "E", ajusta a posição sem ultrapassar "S"
-					pista[i].posicao = tamanhoPista - 2;
-				}
-			}
-			else if (novaPosicao < 0) {
-				// Garante que não ultrapassa "S" (posição inicial)
-				pista[i].posicao = 0;
-			}
-			else {
-				// Se não ultrapassou o final nem "S", atualiza a posição normalmente
-				pista[i].posicao = novaPosicao;
-			}
-		}
-	}
-}
-void verificarChegadaAoPodio() {
-	for (int i = 0; i < PISTA_SIZE; i++) {
-		if (pista[i].posicao <= NUM_PODIO) {
-			pista[i].no_podio = 1;
-		}
-	}
-}
-
 
 
 void novoJogo() {
@@ -957,36 +1068,88 @@ void novoJogo() {
 	jogador P1;
 	nothuman P2;
 	baralho_aposta aposta = { .size = 0,.maxsize = 8 };
+	Personagem personagens[NUM_PERSONAGENS];
+	int riachos[NUM_RIACHOS];
 	
+	
+	// Inicializar riachos em posições aleatórias
+	for (int i = 0; i < NUM_RIACHOS; i++) {
+		riachos[i] = rand() % (TAM_PISTA - 1) + 1; // Evitar posicionar riachos na partida ou chegada
+	}
+
+	inicializarPersonagens(personagens);
+
 	baralhodedescarte(&myB);
+
 	comecarbaralho(&myB);
-	
+
 	scrambledeck(&myB);
-	
-	embaralharapostainicial(&myB, 5, &P1,&P2);
-	
+	apostasIniciaiscomecar(&myB);
+	embaralharapostainicial(&myB, 5, &P1, &P2);
+
 	nomep1(&P1);
 	system("cls");
 	nomep2(&P2);
 	system("cls");
-	
+
+	p1mao(&P1, &myB);
+	p2mao(&P1, &P2, &myB);
+	printcartasparaapostaI(P1);
+	apostaInicial(&P1, &myB);
+	apostaInicialBot(&P2, &myB);
+	removerElemento(&P1.mao.cartas, 7, 'x');
+	removerElemento(&P2.mao.cartas, 7, 'x');
+
+	while (!verificaPodio(personagens)) {
+		system("clear || cls"); // Limpar a tela (pode variar dependendo do sistema operacional)
+
+		imprimirPista(personagens, riachos);
+
+
+		imprimirCartasNaMaoparajogada(P1);
+		escolher_cartajogo(&P1, &myB, &aposta);
+		int fourcards = verifica_cartas(aposta, aposta.size);
+
+		mover(&personagens, aposta.cartas, aposta.size);
+		descartebaralho(&myB, &aposta);
+		refillp1mao(&P1, &myB);
+		
+		printf("Pressiona enter para prosseguir:\n");
+		getch(); // Aguarda o usuário pressionar uma tecla
+
+	}
+	 
+
+	/*baralhodedescarte(&myB);
+	//comecarbaralho(&myB);
+	//
+	//scrambledeck(&myB);
+	//
+	//embaralharapostainicial(&myB, 5, &P1,&P2);
+	//
+	//nomep1(&P1);
+	//system("cls");
+	//nomep2(&P2);
+	//system("cls");
+	//
+	//FILE* fp = NULL;
+	//fopen_s(&fp, "maindeck.txt", "w");
+	//if (fp) {
+	//	saveBaralho(fp, &myB);
+	//	fclose(fp);
+	//}
+	//gotoxy(40, 15);
+	//printf("Baralho inicial:\n");
+	//printbaralho(myB);
+	//system("pause");
+	//
+	//p1mao(&P1, &myB);
+	//p2mao(&P1,&P2,&myB);*/
+
 	FILE* fp = NULL;
 	fopen_s(&fp, "maindeck.txt", "w");
 	if (fp) {
-		saveBaralho(fp, &myB);
-		fclose(fp);
-	}
-	gotoxy(40, 15);
-	printf("Baralho inicial:\n");
-	printbaralho(myB);
-	system("pause");
-	
-	p1mao(&P1, &myB);
-	p2mao(&P1,&P2,&myB);
-
-	fopen_s(&fp, "maindeck.txt", "w");
-	if (fp) {
-		savedeckplusp1(fp, &myB, &P1,&P2);
+		savedeckplusp(fp, &myB, &P1,&P2);
 
 		fclose(fp);
 	}
@@ -1006,20 +1169,33 @@ void novoJogo() {
 	imprimirCartasNaMaoparajogadabot(P2);
 	system("cls");
 
-	inicializarPista();
-	imprimirPista();
+	imprimirPista(personagens, riachos);
 
 	system("pause");
 	imprimirCartasNaMaoparajogada(P1);
 	escolher_cartajogo(&P1, &myB, &aposta);
-	moverPersonagem(&P1, aposta);
 	system("pause");
 	system("cls");
 	printf("Posições após mover Personagem:\n");
 	
-	atualizarPosicoes(pista, PISTA_SIZE);
-	imprimirPista();
 	descartebaralho(&myB, &aposta);
+
+	// Imprimir o pódio final
+
+	imprimirPodio(personagens);
+
+	// Exibir os jogadores ordenados por ordem de chegada
+	printf("\n\nPosições de Chegada Ordenadas:\n");
+	for (int ordem = 1; ordem <= 3; ordem++) {
+		for (int i = 0; i < NUM_PERSONAGENS; i++) {
+			if (personagens[i].ordemChegada == ordem) {
+				printf("Jogador %c - Posição: %d - Ordem de Chegada: %d\n", personagens[i].nome, personagens[i].posicao, personagens[i].ordemChegada);
+			}
+		}
+	}
+
+	return 0;
+
 }
 
 int main(void) {
@@ -1030,8 +1206,6 @@ int main(void) {
 	setlocale(LC_ALL, "Portuguese");
 	int escolha_menu;
 	char content[1000];
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleDisplayMode(hConsole, CONSOLE_FULLSCREEN_MODE, 0);
 
 
 	FILE* Rules;
