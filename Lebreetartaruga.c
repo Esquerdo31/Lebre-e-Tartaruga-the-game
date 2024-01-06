@@ -6,6 +6,7 @@
 #define TAM_PISTA 13
 #define NUM_RIACHOS 2
 
+
 void ecraInicial() {
 
 	setColor(MY_COLOR_CYAN, MY_COLOR_BLACK);
@@ -28,7 +29,7 @@ typedef struct BARALHO {
 }baralho;
 
 typedef struct Apostasdejogo{
-	char cartas[8];  // Estrutura para representar o baralho de aposta dentro do jogo
+	char cartas[9];  // Estrutura para representar o baralho de aposta dentro do jogo
 	int size;        // Tamanho atual do baralho de aposta
 	int maxsize;     // Tamanho máximo do baralho de aposta
 } baralho_aposta;
@@ -62,6 +63,7 @@ typedef struct {
 	char nome;
 	int posicao;
 	int ordemChegada; // Ordem de chegada para o pódio (1, 2, 3)
+	
 } Personagem;
 
 
@@ -114,6 +116,7 @@ void imprimirPista(const Personagem personagens[], const int riachos[]) {
 				if (personagens[j].posicao == i) {
 					printf("%c", personagens[j].nome);
 					riachoEncontrado = 1;
+					
 				}
 			}
 
@@ -343,28 +346,30 @@ void p1mao(jogador* P1, baralho* myB) {
 
 void refillp1mao(jogador* P1, baralho* myB) {
 
-	P1->mao.maxsize = 6;
+	
 	int i = 0;
 	int j = 0;
 	while (P1->mao.size != P1->mao.maxsize) {
 		if (myB->cartas[i] != 'x') {
-			do {
+
+			for (j = 0; j < P1->mao.maxsize; j++) {
+
 				if (P1->mao.cartas[j] == 'x') {
 					P1->mao.cartas[j] = myB->cartas[i];
 					myB->cartas[i] = 'x';
 					P1->mao.size++;
+					break;
+
 
 				}
-				j++;
-			} while (P1->mao.cartas[j] == 'x');
+
+			}
+			
 		}
 		i++;
 	}
 }
 		
-	
-
-
 
 void p2mao(jogador* P1,nothuman* P2, baralho* myB) {
 	int i;
@@ -693,10 +698,15 @@ void apostaInicialBot(nothuman* P2, baralho* myB) {
 
 //Adicionar ao baralho de aposta as cartas jogadas
 baralho_aposta adicionar_carta_ao_baralho(char carta, baralho_aposta aposta) {
-	aposta.maxsize = 8;
+	aposta.maxsize = 9;
+	
 	if (aposta.size < aposta.maxsize) {
 		for (int i = 0; i < aposta.size; i++) {
-			aposta.cartas[i] = carta;
+			if(aposta.cartas[i]=='L' || aposta.cartas[i] == 'W' || aposta.cartas[i] == 'w' || aposta.cartas[i] == 'R'  || aposta.cartas[i] == 'C' || aposta.cartas[i] == 'T' ){
+				
+			}else
+				aposta.cartas[i] = carta; 
+			
 		}
 		
 	}
@@ -783,7 +793,7 @@ void escolher_cartajogo(jogador *P1, baralho* myB,baralho_aposta* aposta) {
 			}
 
 			remover_cartas_da_mao(P1->jogo, quantidade, P1);
-			aposta->size = quantidade;
+			aposta->size = aposta->size + quantidade;
 			*aposta = adicionar_carta_ao_baralho(P1->jogo, *aposta);
 
 			int h = 0;
@@ -811,7 +821,9 @@ void escolher_cartajogo(jogador *P1, baralho* myB,baralho_aposta* aposta) {
 
 			}
 		}
-	P1->mao.size= P1->mao.size - quantidade;
+			P1->mao.size = 6;
+			P1->mao.size= P1->mao.size - quantidade;
+			P1->mao.maxsize = 6;
 
 			printf("\nFicaste com estas cartas no teu deck :");
 			for (int i = 0; i < 6; i++) {
@@ -922,7 +934,7 @@ void imprimirCartasNaMaoparajogadabot(nothuman P2) {
 	
 
 // Função para verificar se há uma carta 'W' no deck de cartas
-	int temCartaW(baralho_aposta cartas[], int num_cartas) {
+int temCartaW(baralho_aposta cartas[], int num_cartas) {
 		for (int i = 0; i < num_cartas; i++) {
 			if (cartas->cartas[i] == 'w') {
 				return 1; // Encontrou uma carta 'w'
@@ -934,62 +946,107 @@ void imprimirCartasNaMaoparajogadabot(nothuman P2) {
 
 
 	// Função para mover um personagem com base nas cartas da aposta
-	void mover(Personagem* personagem, char cartas[], int num_cartas) {
+void mover(Personagem* personagem, char cartas[], int num_cartas, const int riachos[]) {
 		int avancoL = 0;
 		int avancoT = 0;
 		int avancoW = 0;
 		int avancoR = 0;
 		int avancoC = 0;
-
-
+		int contarL = 0;
+		int contarT = 0;
+		int contarW = 0;
+		int contarR = 0;
+		int contarC = 0;
+		
 		if (!temCartaW(cartas, num_cartas)) {
 
 			// Se não há carta 'w', o personagem avança de acordo com as cartas
 			for (int i = 0; i < num_cartas; i++) {
 				switch (cartas[i]) {
 				case 'L': {
-					int pos=0;
-					pos++;
-					avancoL+= pos ;
+					
+					
+					avancoL ++;
+					contarL = contarL + 1;
 					break;
 				}
 				case 'T': {
-					int pos = 0;
-					pos++;
-					avancoT += pos;
+					
+					avancoT++;
+					contarT = contarT + 1;
 					break;
 				}
 				case 'W': {
-					int pos = 0;
 					
-					pos++;
-					avancoW += pos;
+					avancoW++;
+					contarW = contarW + 1;
 					break;
 				}
 				case 'R': {
-					int pos = 0;
-				
-					pos++;
-					avancoR += pos;
+					
+					avancoR++;
+					contarR = contarR + 1;
 					break;
 				}
 				case 'C': {
-					int pos = 0;
 					
-					pos++;
-					avancoC += pos;
+					avancoC++;
+					contarC = contarC + 1;
 					break;
 				}
 				}
 
 			}
+			if (contarL != 0) {
+			if (personagem[0].posicao > personagem[1].posicao && personagem[0].posicao > personagem[2].posicao && personagem[0].posicao > personagem[3].posicao && personagem[0].posicao > personagem[4].posicao && contarL == 4) {
+				avancoL = 0;
+				personagem[0].posicao = personagem[0].posicao +avancoL;
+			}
+			else {
+				personagem[0].posicao = personagem[0].posicao +2;
+			}
+			}else {
+				personagem[0].posicao = personagem[0].posicao+ avancoL;
+			}
+			
+			if (contarT != 0) {
+				if (contarT == 4) {
+					personagem[1].posicao = personagem[1].posicao +2;
+				}
+				else {
+					personagem[1].posicao = personagem[1].posicao +1;
+				}
+			}else {
+				personagem[1].posicao = personagem[1].posicao+ avancoT;
+			}
+			
+			if (avancoW > 1) {
+				personagem[2].posicao = personagem[2].posicao + avancoW - 1;
+			}
+			else {
+				personagem[2].posicao = personagem[2].posicao +avancoW;
+			
+			}
 
-			personagem[0].posicao =+avancoL;
-			personagem[1].posicao =+avancoT;
-			personagem[2].posicao =+avancoW;
-			personagem[3].posicao =+avancoR;
-			personagem[4].posicao =+avancoC;
+			personagem[3].posicao = personagem[3].posicao +avancoR;
 
+			if (contarC != 0) {
+				;
+				
+				for (int i = 0; i < contarC; i++) {
+					if ( temriacho(riachos, personagem[4].posicao ==1 )) {
+						break;
+					}
+					else
+					{
+						personagem[4].posicao = personagem[4].posicao+ 1 + avancoC;
+					}
+
+				}
+			}
+			else {
+				personagem[4].posicao = personagem[4].posicao +avancoC;
+			}
 		}
 		else
 		{
@@ -1005,11 +1062,11 @@ void imprimirCartasNaMaoparajogadabot(nothuman P2) {
 			}
 				}
 					if (pos == 1) {
-						personagem['W'].posicao = pos;
+						personagem[2].posicao = personagem['W'].posicao+ pos;
 						
 					}
 					else {
-						personagem['W'].posicao = pos-1;
+						personagem[2].posicao = personagem['W'].posicao+ pos-1;
 					}
 	
 
@@ -1061,21 +1118,29 @@ int verifica_cartas(baralho_aposta cartas, int tamanho) {
 	return 0; // Quatro cartas do tipo não encontradas
 }
 
+int temriacho(int riachos[], int posicao) {
+	for (int i = 0; i < NUM_RIACHOS; i++) {
+		if (riachos[i] == posicao) {
+			return 1; // Encontrou um riacho na posição
+		}
+	}
+	return 0; // Não encontrou nenhum riacho na posição
+}
 
 void novoJogo() {
 
 	baralho myB;
 	jogador P1;
 	nothuman P2;
-	baralho_aposta aposta = { .size = 0,.maxsize = 8 };
+	baralho_aposta aposta = { .size = 0,.maxsize = 9 };
 	Personagem personagens[NUM_PERSONAGENS];
 	int riachos[NUM_RIACHOS];
-	
 	
 	// Inicializar riachos em posições aleatórias
 	for (int i = 0; i < NUM_RIACHOS; i++) {
 		riachos[i] = rand() % (TAM_PISTA - 1) + 1; // Evitar posicionar riachos na partida ou chegada
 	}
+	
 
 	inicializarPersonagens(personagens);
 
@@ -1104,19 +1169,22 @@ void novoJogo() {
 		system("clear || cls"); // Limpar a tela (pode variar dependendo do sistema operacional)
 
 		imprimirPista(personagens, riachos);
-
-
-		imprimirCartasNaMaoparajogada(P1);
-		escolher_cartajogo(&P1, &myB, &aposta);
-		int fourcards = verifica_cartas(aposta, aposta.size);
-
-		mover(&personagens, aposta.cartas, aposta.size);
-		descartebaralho(&myB, &aposta);
-		refillp1mao(&P1, &myB);
+		int fourcards = 0;
+		do {
+			imprimirCartasNaMaoparajogada(P1);
+			escolher_cartajogo(&P1, &myB, &aposta);
+			fourcards = verifica_cartas(aposta, aposta.size);
 		
-		printf("Pressiona enter para prosseguir:\n");
-		getch(); // Aguarda o usuário pressionar uma tecla
+				
+				refillp1mao(&P1, &myB);
+			
 
+			printf("Pressiona enter para prosseguir:\n");
+			getch(); // Aguarda o usuário pressionar uma tecla
+		} while (aposta.size != 8 && fourcards != 1);
+		
+		mover(&personagens, aposta.cartas, aposta.size, riachos);
+		descartebaralho(&myB, &aposta);
 	}
 	 
 
